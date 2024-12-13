@@ -31,4 +31,28 @@ public interface SerieRepository extends JpaRepository<Serie, Long> {
 
     @Query("SELECT e FROM Serie s JOIN s.episodios e WHERE s = :serie AND YEAR(e.dataLancamento) >= :anoLancamento")
     List<Episodio> episodiosPorSerieEAno(Serie serie, int anoLancamento);
+
+    /*
+     * Ao executar esse código, ele pega os 5 episodios mais recentes e retorna as
+     * séries correspondentes a eles, fazendo um left join. Porém, se seus episódios
+     * mais recentes forem de uma única série, ele retornará apenas essa série, não
+     * trazendo 5 resultados diferentes.
+     * 
+     * No desenvolvimento colaborativo, é muito comum encontrar problemas ao rodar
+     * códigos em máquinas diferentes, com registros diferentes. Por isso é
+     * importante que sejamos cuidadosos ao testar cada funcionalidade nova.
+     * 
+     * Para resolver esse problema, precisaremos recorrer às consultas JPQL, usando
+     * um inner join, diferente do left join, agrupando os dados por série, a fim de
+     * trazer 5 registros diferentes do banco. Abordaremos em vídeo sobre essa
+     * correção, mas caso você queira se adiantar, utilize o código a seguir no
+     * lugar da derived querie findTop5ByOrderByEpisodiosDataLancamentoDesc().
+     */
+    List<Serie> findTop5ByOrderByEpisodiosDataLancamentoDesc();
+
+    @Query("SELECT s FROM Serie s " +
+            "JOIN s.episodios e " +
+            "GROUP BY s " +
+            "ORDER BY MAX(e.dataLancamento) DESC LIMIT 5")
+    List<Serie> encontrarEpisodiosMaisRecentes();
 }
