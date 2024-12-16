@@ -1,14 +1,17 @@
 package com.fredericomf.screenmatch_web.service;
 
-import com.fredericomf.screenmatch_web.dto.SerieDTO;
-import com.fredericomf.screenmatch_web.model.Serie;
-import com.fredericomf.screenmatch_web.repository.SerieRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fredericomf.screenmatch_web.dto.EpisodioDTO;
+import com.fredericomf.screenmatch_web.dto.SerieDTO;
+import com.fredericomf.screenmatch_web.model.Categoria;
+import com.fredericomf.screenmatch_web.model.Serie;
+import com.fredericomf.screenmatch_web.repository.SerieRepository;
 
 @Service
 public class SerieService {
@@ -44,5 +47,30 @@ public class SerieService {
                     s.getAtores(), s.getPoster(), s.getSinopse());
         }
         return null;
+    }
+
+    public List<EpisodioDTO> obterTodasTemporadas(Long id) {
+        Optional<Serie> serie = repositorio.findById(id);
+
+        if (serie.isPresent()) {
+            Serie s = serie.get();
+            return s.getEpisodios().stream()
+                    .map(e -> new EpisodioDTO(e.getTemporada(), e.getTitulo(), e.getNumeroEpisodio()))
+                    .collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    public List<EpisodioDTO> obterEpisodiosPorTemporada(Long id, Long temporada) {
+        return repositorio.obterEpisodiosPorTemporada(id, temporada).stream()
+                .map(e -> new EpisodioDTO(e.getTemporada(), e.getTitulo(), e.getNumeroEpisodio()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SerieDTO> obterSeriesPorCategoria(String nomeGenero) {
+
+        Categoria categoria = Categoria.fromPortugues(nomeGenero);
+
+        return converteDados(repositorio.findByGenero(categoria));
     }
 }
